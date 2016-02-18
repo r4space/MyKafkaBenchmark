@@ -1,0 +1,54 @@
+apply plugin: 'idea'
+apply plugin: 'java'
+//apply plugin: 'application'
+
+//mainClassName="org.dia.HTKafka.HTProducer"
+//applicationDefaultJvmArgs = ["/home/jwyngaard/work/jpl/KAFKA/HTKafka-benchmark/build/resources/main/producer.properties"]
+group ='org.dia.HTKafka'
+version='0.01'
+sourceCompatibility = 1.7
+
+repositories {
+    mavenCentral()
+}
+
+dependencies{
+	compile ('org.apache.kafka:kafka-clients:0.8.2.1'){
+		exclude group: 'com.sun.jmx', module: 'jmxri'
+		exclude group: 'com.sun.jdmk', module: 'jmxtools'
+		exclude group: 'javax.jms', module: 'jms'
+	}
+
+	compile('org.apache.kafka:kafka_2.10:0.8.2.1'){
+		exclude group: 'com.sun.jmx', module: 'jmxri'
+		exclude group: 'com.sun.jdmk', module: 'jmxtools'
+		exclude group: 'javax.jms', module: 'jms'
+	}
+
+	compile ('joda-time:joda-time:2.8.2')
+
+
+	compile('log4j:log4j:1.2.15'){
+                exclude group: 'com.sun.jmx', module: 'jmxri'
+                exclude group: 'com.sun.jdmk', module: 'jmxtools'
+                exclude group: 'javax.jms', module: 'jms'
+    }
+
+
+
+
+}
+
+jar {
+//    manifest {
+  //      attributes "Main-Class" : "org.dia.HTKafka.HTProducer.HTProducer"
+
+    //}
+    from {
+        configurations.compile.collect {it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+
+
+

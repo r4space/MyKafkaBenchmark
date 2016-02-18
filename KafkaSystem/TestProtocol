@@ -1,0 +1,8 @@
+Each test becomes a git branch
+
+Level1:
+    Each on SparkCluster and rangler
+        Kafka benchmark
+        My old tests (on Spark - don't have to repeat on wrangler?)
+
+Level2: JVM tuning
