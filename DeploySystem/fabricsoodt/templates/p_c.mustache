@@ -1,0 +1,62 @@
+#-----------------------
+#Benchmark properties - ensure this section is identical in all properties filesi
+ID={{ID}}
+msgsize={{msgsize}}
+topic={{topic}}
+partitionCount={{partitionCount}}
+inputFile={{inputFile}}
+#-----------------------
+# Producer properties
+bootstrap.servers={{zocP}}
+zookeeper.connect={{zocP}}
+
+key.serializer=org.apache.kafka.common.serialization.StringSerializer
+value.serializer=org.apache.kafka.common.serialization.ByteArraySerializer
+acks =1
+buffer.memory=33554432
+compression.type=none
+retries=0
+batch.size=0
+linger.ms=0
+max.request.size=1048576
+receive.buffer.bytes=32768
+send.buffer.bytes=131072
+timeout.ms=30000
+block.on.buffer.full=true
+metadata.fetch.timeout.ms=60000
+metadata.max.age.ms=300000
+reconnect.backoff.ms=10
+retry.backoff.ms=100
+
+#metric.reporters
+#metrics.num.samples
+#metrics.sample.window.ms
+#client.id
+
+
+# Benchmark properties
+#broker.nodes=192.168.3.11:9092, 192.168.3.12:9092
+#message.size=1048
+#producer.nodes=192.168.3.14
+#consumer.nodes=192.168.3.16
+
+#broker.nodes=c251-104:9092
+#producer.nodes=c251-109
+#consumer.nodes=c251-110
+
+
+#request.required.acks=0
+#producer.type=1
+#serializer.class=kafka.serializer.StringEncoder
+#threads.per.topic=1
+
+
+# props.put("partitioner.class", "example.producer.SimplePartitioner");
+#buffer.memory=104857600
+#max.request.size=104857600
+#receive.buffer.bytes=104857600
+#send.buffer.bytes=104857600
+# Consumer properties
+#socket.receive.buffer.bytes=104857600
+#threads.per.topic=1
+#fetch.message.max.bytes=104857600
