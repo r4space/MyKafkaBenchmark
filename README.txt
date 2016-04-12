@@ -6,7 +6,7 @@ OPERATION
 
 - Ensure passkey access to deploying nodes
 - Setup config file.	
-	-- A template of which can be found in configs/config.ini.  All parameters found here must be set, comment out sections for aplication which you do not wish to have installed.
+	-- A template of which is found in ./config_template.ini  All parameters found here must be set, comment out sections for aplication which you do not wish to have installed.
 	-- Where greater configuration of applications is desired than is made available via this config file, templates contains application-specific config file templates.  These may be edited.  Any changes made here will propigate to all nodes receiving this file.
 - Ensure 5GB RAM available for Tachyon
 - Ensure the listed dependancise are installed on the machine from which this install application will be run.  

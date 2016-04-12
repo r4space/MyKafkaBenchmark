@@ -1,5 +1,6 @@
 package org.dia.HTKafka.HTProducer;
 
+import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
@@ -35,15 +36,8 @@ public class HTProducer {
         //The following dd command was used to create a 1GB file:
         //dd if=/dev/urandom of=/tmp/input.dat bs=1000000 count=1000
         int msgcount=Integer.parseInt(config.getProperty("msgcount"));
-        int msgmax=Integer.parseInt(config.getProperty("msgmax"));
-        //A
-       // for (int msgsize=100; msgsize<1024; msgsize+=100){
-        //B
-        //for (int msgsize=1024; msgsize<1048576; msgsize+=10240){
-        //C
-     //   for (int msgsize=1048576; msgsize<104857600; msgsize+=1048576){
-//        for (int msgsize=1048576; msgsize<msgmax; msgsize+=1048576){
-//        for (int msgsize=1024; msgsize<524288000; msgsize+=1024){
+        int msgsize=Integer.parseInt(config.getProperty("msgsizex"));
+        for (int msgsize=0; msgsize<10; msgsize+=100){
             //Create a byte array 1GB large to save file data in
             int msgsize = Integer.parseInt(config.getProperty("msgsize"));
             byte[] messageData = new byte[msgsize];

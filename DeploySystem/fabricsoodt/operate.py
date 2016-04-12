@@ -1,4 +1,16 @@
-''' Module containing clean(), install(). startBrokers(), stopBrokers(), runTest() '''
+''' Module containing:
+clean(),
+install(),
+cleanBroker(directory)
+startBrokers(),
+stopBrokers(),
+startProducers(),
+startConsumers(),
+stopProducers(),
+stopConsumers(),
+runTest(),
+createData()
+'''
 # External imports
 import logging
 import sys
@@ -17,29 +29,26 @@ import fabricsoodt.start
 import fabricsoodt.stop
 import fabricsoodt.test
 
-logger = logging.getLogger('fabricsoodt.operate')
-logging.getLogger("paramiko").setLevel(logging.WARNING)
+#logger = logging.getLogger('fabricsoodt.operate')
+#logging.getLogger("paramiko").setLevel(logging.WARNING)
+logger = logging.getLogger(__name__)
 
 
 def cleanBroker(directory):
 	''' Removes contents of a directory '''
 	ret=fabric.api.run("rm -r {0}".format(directory))
 	if ret.failed:
-		logger.error("Failed to cleann broker node directory: {0}".format(directory))
+		logger.error("Failed to clean broker node directory: {0}".format(directory))
 
 
 def clean():
     # Returns the contents of provided ini file as a dictionary of dictionaries
-    fabric.api.local("rm -r ./logs/*")
+#    fabric.api.local("rm -r ./logs/*")
     fabric.api.local("rm -r ./fabricsoodt/templates/myid")
     fabric.api.local("rm -r ./fabricsoodt/templates/*.properties")
-#    fabric.api.local("rm -r ./downloads/*")
-
+    logger.info("this was written from operate")
 
 def install():
-    # INITIALISATION
-    # ------------------------------------------
-
     # Returns the contents of provided ini file as a dictionary of dictionaries
     configuration = fabricsoodt.setup.readconfig(str(sys.argv[2]))
     logger.info("\n> install() Reading configuration file: {0}".format(sys.argv[2]))
@@ -66,8 +75,6 @@ def install():
     pwd = fabric.api.local("pwd", capture=True)
     downloads = pwd + "/downloads/"
 
-    dList = []
-
     if fabric.api.execute(fabricsoodt.setup.download, configuration['KAFKA']['url'], downloads, roles=['login']):
         logger.info("\n> Downloaded: {0} to {1}".format('KAFKA', downloads))
 
@@ -77,60 +84,19 @@ def install():
             fabric.api.abort("Aborting at users request")
         else:
             logger.info("\n> Continuing without {0}".format('KAFKA'))
-            dList.appen('KAFKA')
 
-    for i in dList: del configuration[i]
-
-    # EXTRACT and BUILD
-    # ------------------------------------------
-
+    # EXTRACT
     tarPath = downloads + configuration['KAFKA']['url'].split('/')[-1:][0]
     # Extract returns the resulting folder name, capture to configuration
     configuration['KAFKA']['folderName'] = fabricsoodt.build.extract(tarPath, downloads)
+
     # Set Application HOME path
     configuration['KAFKA']['HOME'] = configuration['CONFIGS']['destination'] + configuration['KAFKA']['folderName']
 
-    if configuration['KAFKA']['build']:
-        # Setup required environment variables
-        fabric.api.execute(fabricsoodt.setup.setEnvs, configuration['KAFKA']['envvars'],
-                           configuration['CONFIGS']['user'], roles=['login'])
-
-        # Run build
-        msg = fabricsoodt.build.build('KAFKA', tarPath, configuration['CONFIGS']['sudo'],
-                                      configuration['KAFKA']['test'])
-        logger.info(msg)
-    else:
-        logger.info("\n> End build stage")
-
-    # DISTRIBUTE and CONFIGURE
-    # ------------------------------------------
-
-    ###################Commented out for future use ##################
-
-    # Dependancies are currently ensured/checked for in 3 manners:
-    # - The readme requires basics for install
-    # - If a build is requested that build function ensures that application's dependancies are met
-    # - This currently commented out section provides a means for additional packages to be installed, for instance a need for svn is indicated but currently unused.  To activate uncomment the following lines and provide the apt-get / yum recognisable names of dependancies in list ToQuery
-
-
-    #	ToQuery = [['subversion',1]]
-    #	missing = execute(distribute.dependanciesCheck,ToQuery,setup.getos(),roles=['ALLnodesIPs'])
-    #	if filter(lambda d: d !="",missing.values()):
-    #		logger.error("The following dependancies are missing on the deploy nodes, please install and re-run: {}".format(str(missing)))
-    #		fabric.utils.abort("Aborting due to missing dependancies on remote nodes")
-
-    ###################################################################
-
-    # Check ulimit -u is above 4096
-    #fabric.api.execute(fabricsoodt.distribute.ulimitCheck, roles=['ALLnodesIPs'])
-    # Check fabric.api.env variables are set:
-    # fabric.api.execute(fabricsoodt.distribute.variablesCheck,roles=['ALLnodesIPs'])
-    # Check destination folder exists
     destination = configuration['CONFIGS']['destination']
     fabric.api.execute(fabricsoodt.distribute.existsCreate, destination, roles=['ALLnodesIPs'])
 
-
-    # Distribute application
+    # Distribute
     source = downloads + configuration['KAFKA']['folderName']
     logger.info("\n> Transfering {0} to nodes: {1}".format(source, destination))
     fabric.api.execute(fabricsoodt.distribute.transfer, source, destination, roles=["KAFKAnodeIPs"])
@@ -141,11 +107,7 @@ def install():
 
     logger.info("\n> Completed {} configuration".format('KAFKA'))
 
-
-    # Start up instalation
-    # Test installation
-
-    logger.info("\n> SOODT deployment completed")
+    logger.info("\n> Kafka deployment completed")
     logger.info("\n ############# END ##############")
 
 
@@ -158,8 +120,6 @@ def startBrokers():
     fabric.api.env.colorize_error = True
     fabric.api.env.user = configuration['CONFIGS']['user']
 
-
-
     # Create an entry in configuration libraries containing app specific IPs in a python list
     nodeIPs = map(lambda z: z.strip(" "), configuration['KAFKA']['nodes'].split(","))
     configuration['KAFKA']['NODES'] = nodeIPs
@@ -170,16 +130,12 @@ def startBrokers():
     fabric.api.execute(cleanBroker,configuration['KAFKA']['zkdatadir'],hosts=nodeIPs)
 
     #Cannot implement below without restructuring as configKafka relies on config['KAFKA']['HOME'] being set which is only done in operate.install()....
-    #logger.info("\n>Refresh kafka configuration")
-    #fabric.api.execute(fabricsoodt.distribute.configKafka, configuration['KAFKA'],hosts=nodeIPs)
+    logger.info("\n>Refresh kafka configuration")
+    fabric.api.execute(fabricsoodt.distribute.configKafka, configuration['KAFKA'],hosts=nodeIPs)
 
     logger.info("\n> Starting Kafka")
     fabricsoodt.start.startupKafka(configuration['KAFKA'])
 
-
-# if configuration['MESOS']['start']:
-#		logger.info("\n> Starting Mesos")
-#		fabricsoodt.start.startupMesos(configuration['MESOS'])
 
 def stopBrokers():
     """ Stop components based on config file requests and logical order """
@@ -196,13 +152,9 @@ def stopBrokers():
     fabricsoodt.stop.stopKafka(configuration['KAFKA'])
 
 
-#	if not configuration['MESOS']['start']:
-#		logger.info("\n> Stopping Mesos")
-#		fabricsoodt.stop.stopMesos(configuration['MESOS'])
-
 def runTest():
     """ Initialises producer and consumer nodes and starts up first the producers and then the conumers """
-
+    # TODO fix runTest
     # Get config
     # Returns the contents of provided ini file as a dictionary of dictionaries
     configuration = fabricsoodt.setup.readconfig(str(sys.argv[2]))
@@ -292,4 +244,17 @@ def createData():
     PNODES = map(lambda z: z.strip(" "), configuration['PRODUCERS']['nodes'].split(","))
     fabricsoodt.test.createData(of,bs,count,NoFiles,PNODES)
 
+def startProducers():
+    pass
+#    TODO define startProducers
+def startConsumers():
+    pass
+# TODO define startConsumers
 
+def stopProducers():
+    pass
+# TODO define stopProducers
+
+def stopConsumers():
+    pass
+#     TODO defin stopConsumers
