@@ -19,23 +19,26 @@ OPERATION
 ------------
 DEPENDANCIES
 ------------
-Python 2.5-2.7
+Python 3
 python-dev
 python-pip
 pip modules*:
-	fabric
 	pystache
 	configparser
+    yarn
 scala
 maven 2.x+
 openjdk-7-jdk
 
 *Use < pip install module-name --user > to install in user space (no sudo required)
 
-$pip install -r requirements.txt
+$ pip install -r requirements.txt
+$ cd DeploymentSystems/Yarn
+$ python setup.py install
 
-
-
+Hint: for colour logs install coloredlogs 
+$ pip install coloredlogs
+And run with -cl or --colouredLogs flag
 
 Some optional applications have their own dependencies.  Given that this install system is intended to not require sudo the user is expected to ensure the following are installed. If sudo access is available set this in the config script and attempts to auto install will be made
 

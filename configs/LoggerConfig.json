@@ -19,7 +19,7 @@
             "class": "logging.handlers.RotatingFileHandler",
             "level": "INFO",
             "formatter": "simple",
-            "filename": "../logs/fabricsoodt_INFO.log",
+            "filename": "./logs/CK_logs/CK_INFO.log",
             "maxBytes": 10485760,
             "backupCount": 20,
             "encoding": "utf8"
@@ -29,7 +29,7 @@
             "class": "logging.handlers.RotatingFileHandler",
             "level": "DEBUG",
             "formatter": "simple",
-            "filename": "../logs/fabricsoodt_DEBUG.log",
+            "filename": "./logs/CK_logs/CK_DEBUG.log",
             "maxBytes": 10485760,
             "backupCount": 20,
             "encoding": "utf8"
@@ -45,7 +45,7 @@
     },
 
     "root": {
-        "level": "INFO",
+        "level": "DEBUG",
         "handlers": ["console", "info_file_handler", "debug_file_handler"]
     }
 }

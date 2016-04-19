@@ -1,3 +1,0 @@
-pystache>=0.5.4
-configparser>=3.5.0b2
-fabric>=1.8
