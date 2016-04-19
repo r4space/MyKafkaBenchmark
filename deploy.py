@@ -16,7 +16,7 @@ parser.add_argument("command", help="Enter a command: install | clean | startBro
 parser.add_argument("config", help="Supply a path to a configuration file")
 args = parser.parse_args()
 
-# Setup Logging
+    # Setup Logging
 if args.colourLog:
     try:
         import coloredlogs
@@ -48,43 +48,43 @@ except ImportError as e:
 configuration = clusterkafka.setup.getconfig(args.config)
 operator = clusterkafka.operate.operate(configuration)
 
-if args.command() == "install":
+if args.command == "install":
     logging.info("> Beginning install of SOODT")
     operator.install()
 
-elif args.command() == "clean":
+elif args.command == "clean":
     logging.info("Cleaning SOODT install directories")
     operator.clean()
 
-elif args.command() == 'startBrokers':
+elif args.command == 'startBrokers':
     logging.info("Starting components")
     operator.startBrokers()
 
-elif args.command() == 'startProducers':
+elif args.command == 'startProducers':
     logging.info("Starting components")
     operator.startProducers()
 
-elif args.command() == 'startConsumers':
+elif args.command == 'startConsumers':
     logging.info("Starting components")
     operator.startConsumers()
 
-elif args.command() == 'stopBrokers':
+elif args.command == 'stopBrokers':
     logging.info("Stopping components")
     operator.stopBrokers()
 
-elif args.command() == 'stopProducers':
+elif args.command == 'stopProducers':
     logging.info("stoping components")
     operator.stopProducers()
 
-elif args.command() == 'stopConsumers':
+elif args.command == 'stopConsumers':
     logging.info("stopping components")
     operator.stopConsumers()
 
-elif args.command() == 'runTest':
+elif args.command == 'runTest':
     logging.info("stopping test")
     operator.runTest()
 
-elif args.command() == 'regenerateData':
+elif args.command == 'regenerateData':
     logging.info("CreatingData")
     operator.createData()
 else:
