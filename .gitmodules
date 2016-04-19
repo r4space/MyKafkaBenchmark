@@ -1,3 +1,6 @@
 [submodule "Yarn"]
 	path = Yarn
 	url = https://github.com/Python-Yarn/Yarn.git
+[submodule "clusterkafka/Yarn"]
+	path = clusterkafka/Yarn
+	url = https://github.com/Python-Yarn/Yarn.git
