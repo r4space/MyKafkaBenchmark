@@ -6,10 +6,11 @@
 *.DS_Store
 .*DS_Store?
 *.bin
+*.properties
 
 **/.idea/*
 **/.idea/workspace.xml 
 **/.idea/tasks.xml
-**/downloads/*
+**/temp/*
 
 

@@ -221,12 +221,6 @@ def configure(app, config):
         logging.error("\n> Applicaion for configuration not recognise")
         fabric.utils.abort("Aborting")
 
-#################################???
-# def chmodFolderToUser(user, folder):
-#	run("chown " + user + " " + folder)
-#	ret=run("chmod -R a+x "+folder)
-#	if ret.failed and not fabric.contrib.console.confirm ("Something went wrong, Continue anyways? "):
-#		abort("Aborting at user request")
 
 ####### Kafka deployment functions ######
 #	""" Start Kafak broker cluster """

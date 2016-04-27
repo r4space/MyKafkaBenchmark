@@ -1,71 +1,22 @@
-''' Module of funtions for starting components '''
+""" Module of functions for starting components """
 
 import logging
-import fabric.api 
+from yarn import api
 
-logger=logging.getLogger('fabricsoodt.start')
-fabric.api.settings.warn_only=True
+log = logging.getLogger(__name__)
 
+@api.parallel
+def start_zserver(k_home):
+    """ Start kafka included zookeeper server on api.env.hots_string node inside a screen session """
 
-##KAFKA FUNCTIONS
-def startupZookeeper():
-	''' Zookeeper startup function '''
-
-	ret = fabric.api.run("screen -d -m $K_HOME/bin/zookeeper-server-start.sh $K_HOME/config/zookeeper.properties; sleep 1")
-	
-	if ret.failed:
-		logger.error("Failed to start Zookeeper node")
-	else:
-		logger.info("Started zookeeper node")
-
-def startupKCluster ():
-	''' Kafka Broker Cluster startup function '''
-	
-	ret = fabric.api.run("screen -d -m $K_HOME/bin/kafka-server-start.sh $K_HOME/config/server.properties; sleep 1")
-	
-	if ret.failed:
-		logger.error("Failed to start Kafka Broker Cluster Node")
-	else:
-		logger.info("Started Kafka broker cluster node")
+    api.run("screen -dm bash -c \"{}bin/zookeeper-server-start.sh {}config/zookeeper.properties; exec bash\"".format(k_home,k_home))
+    log.info("Started zookeeper server on {}".format(api.env.host_string))
 
 
+@api.parallel
+def start_kserver(k_home):
+    """ Start a kafka broker srver on api.env.hots_string node inside a screen session """
 
-def startupKafka(config):
-	''' Starts a kafka cluster '''
-#	logger.info("Cleaning broker cluster")
-#	fabric.api.execute(cleanBroker,config['logsdir'],hosts=config['NODES'])
-#	fabric.api.execute(cleanBroker,config['zkdatadir'],hosts=config['NODES'])
-	
-	logger.info("Starting zookeeper cluster")
-	fabric.api.execute(startupZookeeper,hosts=config['NODES'])
-
-	logger.info("Starting kafka cluster")
-	fabric.api.execute(startupKCluster,hosts=config['NODES'])
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    api.run("screen -dm bash -c \"{}bin/kafka-server-start.sh {}config/server.properties; exec bash\"".format(k_home,k_home))
+    log.info("Started Kafka server on {}".format(api.env.host_string))
 

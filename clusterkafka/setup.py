@@ -4,9 +4,11 @@ import urllib.request
 import platform
 import configparser
 import logging
-from yarn.api import env, cd, run
+from yarn import api
 import os
 import json
+
+log = logging.getLogger(__name__)
 
 def setup_logging(
         default_path='./configs/LoggerConfig.json',
@@ -22,7 +24,8 @@ def setup_logging(
 
     else:
         print("No logger config file found at {0}, using default level of INFO".format(path))
-        logging.basicConfig(level=default_level)
+        log.basicConfig(level=default_level)
+
 
 def getconfig(filename):
     """ Reads the config file and returns a dictionary of sections and their details (also as dictionaries) """
@@ -31,7 +34,7 @@ def getconfig(filename):
     config = configparser.ConfigParser()
     config.read(filename)
     config.sections()
-    logging.info("READING confiigs")
+    log.info("Reading in configuration")
     for section in config:
         if section == "DEFAULT": continue
         parameters = {}
@@ -49,49 +52,46 @@ def getconfig(filename):
 
     return configuration
 
-# def download(url, destination):
-#	""" Fetches a generic URL to disk, creating the destination directory if necessary, return success or fail. """
-#	resultName = destination+url.split('/')[-1:][0]
-#
-#	if not fabric.contrib.files.exists(destination):
-#		ret=fabric.api.run("mkdir -p " + destination)
-#		if ret.failed:
-#			fabric.utils.abort("Failed to make directory {0}, likely due to permissions issue, aborting".format(destination))
-#	elif fabric.contrib.files.exists(resultName) and not fabric.contrib.console.confirm("File {} already found, re-download?".format(resultName)):
-#		return 1
-#
-#	try:
-#		f = urlopen(url)
-#		with open(resultName,"wb") as output_file:
-#			logger.info ("\n> Downloading {0} to {1}".format(url, destination))
-#			output_file.write(f.read())
-#		return 1
-#	except HTTPError, e:
-#		logger.error("\n> HTTP Error: ", e.code, url)
-#		return 0
-#	except URLError, e:
-#		logger.error("\n> URL Error: ", e.reason, url)
-#		return 0
-#
-# def getos():
-#	""" Return 6 letter lowercase version of current OS """
-#	dist = platform.linux_distribution()
-#	return dist[0].lower()[0:6]
-#
-# def setEnvs(string,user):
-#	envvars = dict(pair.split(":") for pair in string.split(","))
-#	for var in envvars:
-#		ret=fabric.api.run("echo \"export {0}={1}\" >> /home/{2}/.bash_profile".format(var,envvars[var],user))
-#		logger.info("\n> Set {0} = {1}".format(var,envvars[var]))
-#		if ret.failed:
-#			fabric.utils.abort("Failed to set env variables{0}, aborting".format(var))
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
+@api.parallel
+def setEnvs(string, user):
+    envvars = dict(pair.split(":") for pair in string.split(","))
+    for var in envvars:
+        api.run("echo \"export {0}={1}\" >> /home/{2}/.bash_profile".format(var, envvars[var], user))
+
+    log.info("\n Set env variable: {0} = {1}".format(var, envvars[var]))
+
+@api.parallel
+def push_extract(source, destination):
+    """Puts and extracts a *.tgz file in a remote directory after checking it exists or creating it """
+    taronly=source.split("/")[-1]
+    log.info("\nPushing kafka tgz to nodes and extracting")
+    #Check for destination folder
+    if api.run("[ -d \"{}\" ] && echo 1".format(destination)) != "1":
+        api.run("mkdir {}".format(destination))
+
+    #Check for tgz already existing there and then extract
+    if api.run("[ -f \"{}\" ] && echo 1".format(destination+taronly)) == "1":
+        api.run('tar --skip-old-files -xzf {} -C {} '.format(destination + taronly, destination))
+        return
+    else:
+        api.put(source, destination+taronly)
+        api.run('tar --skip-old-files -xzf {} -C {} '.format(destination + taronly, destination))
+        return
+
+def check_nodes(ip):
+    """ Checks if the local machine can reach a given IP returns
+    :param ip:
+    :return True/False:
+    """
+    log.info("\nChecking {} is reachable from host node. - ".format(ip))
+    str=api.local("nc -z -w1 {} 22 && echo $?".format(ip))
+    if str == "0":
+        log.info("Success")
+        return True
+    else:
+        log.info("\nFailed to reach {}".format(ip))
+        return False
+
+
+
+

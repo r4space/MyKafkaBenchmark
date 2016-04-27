@@ -1,36 +1,24 @@
-''' Module of funtions for stopping components '''
+""" Module of functions for stopping components """
 
 import logging
-import fabric.api 
+from yarn import api
 
-logger=logging.getLogger('fabricsoodt.stop')
-fabric.api.settings.warn_only=True
+log = logging.getLogger(__name__)
 
-##KAFKA FUNCTIONS
-def stopZookeeper():
-	''' Zookeeper stop function '''
+@api.parallel
+def stop_zserver(k_home):
+    """ Stop kafka included zookeeper server on api.env.hots_string node """
 
-	ret = fabric.api.run("screen -d -m $K_HOME/bin/zookeeper-server-stop.sh $K_HOME/config/zookeeper.properties; sleep 1")
-	
-	if ret.failed:
-		logger.error("Failed to stop Zookeeper node")
-	else:
-		logger.info("Stopped zookeeper node")
-def stopKCluster ():
-	''' Kafka Broker Cluster stop function '''
-	
-	ret = fabric.api.run("screen -d -m $K_HOME/bin/kafka-server-stop.sh $K_HOME/config/server.properties; sleep 1")
-	
-	if ret.failed:
-		logger.error("Failed to stop Kafka Broker Cluster Node")
-	else:
-		logger.info("Stopped Kafka broker cluster node")
+    #TODO does this work without screen
+    api.run("screen -dm bash -c \"{}bin/zookeeper-server-stop.sh {}config/zookeeper.properties; exec bash\"".format(k_home,k_home))
+    log.info("Stopped zookeeper server on {}".format(api.env.host_string))
 
-def stopKafka(config):
-	''' Stops a kafka cluster '''
-	
-	logger.info("Stopping kafka cluster")
-	fabric.api.execute(stopKCluster,hosts=config['NODES'])
-	
-	logger.info("Stopping zookeeper cluster")
-	fabric.api.execute(stopZookeeper,hosts=config['NODES'])
+
+@api.parallel
+def stop_kserver(k_home):
+    """ Stop a kafka broker server on api.env.hots_string node """
+
+    #TODO does this work without screen
+    api.run("screen -dm bash -c \"{}bin/zookeeper-server-start.sh {}config/zookeeper.properties; exec bash\"".format(k_home,k_home))
+    api.run("screen -dm bash -c \"{}bin/kafka-server-stop.sh {}config/server.properties; exec bash\"".format(k_home,k_home))
+    log.info("Stopped Kafka server on {}".format(api.env.host_string))

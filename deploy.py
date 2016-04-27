@@ -12,7 +12,7 @@ import clusterkafka
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-cl", "--colourLog", help="Activate colour logging", action="store_true")
-parser.add_argument("command", help="Enter a command: install | clean | startBrokers | stopBrokers | startProducers | startConsumers | stopProducers | stopConsumers | runTest X | regenerateData")
+parser.add_argument("command", help="Enter a command: install | clean | cleanBrokers | startBrokers | stopBrokers | startProducers | startConsumers | stopProducers | stopConsumers | runTest X | regenerateData")
 parser.add_argument("config", help="Supply a path to a configuration file")
 args = parser.parse_args()
 
@@ -30,18 +30,19 @@ if args.colourLog:
     clusterkafka.setup.setup_logging()
     coloredlogs.install(level='DEBUG')
 else:
-   clusterkafka.etup.setup_logging()
+   clusterkafka.setup.setup_logging()
+
+log = logging.getLogger(__name__)
 
 #  External imports
 try:
     import yarn
     import pystache
     import configparser
-    logging.info("Successfully imported external modules")
+    log.info("Successfully imported external modules")
 
 except ImportError as e:
-    logging.error("Error: {0}".format(e))
-    print("Please install the necessary python modules: 'pip install --user -r requirements.txt'")
+    log.error("Error: {0}.  \nPlease install the necessary python modules: 'pip install --user -r requirements.txt'".format(e))
     sys.exit(1)
 
 # Acquire Configuration Information
@@ -49,44 +50,49 @@ configuration = clusterkafka.setup.getconfig(args.config)
 operator = clusterkafka.operate.operate(configuration)
 
 if args.command == "install":
-    logging.info("> Beginning install of SOODT")
+    log.info("Beginning install of distributed Kafka")
     operator.install()
 
 elif args.command == "clean":
-    logging.info("Cleaning SOODT install directories")
+    log.info("Cleaning local install directories")
     operator.clean()
 
+elif args.command == "cleanBrokers":
+    log.info("Cleaning remote kafka broker directories")
+    operator.clean_brokers()
+
 elif args.command == 'startBrokers':
-    logging.info("Starting components")
-    operator.startBrokers()
+    log.info("Starting components")
+    operator.start_kbrokers()
+
+elif args.command == 'stopBrokers':
+    log.info("Stopping Kafka Broker nodes")
+    operator.stop_kbrokers()
 
 elif args.command == 'startProducers':
-    logging.info("Starting components")
+    log.info("Starting components")
     operator.startProducers()
 
 elif args.command == 'startConsumers':
-    logging.info("Starting components")
+    log.info("Starting components")
     operator.startConsumers()
 
-elif args.command == 'stopBrokers':
-    logging.info("Stopping components")
-    operator.stopBrokers()
 
 elif args.command == 'stopProducers':
-    logging.info("stoping components")
+    log.info("stoping components")
     operator.stopProducers()
 
 elif args.command == 'stopConsumers':
-    logging.info("stopping components")
+    log.info("stopping components")
     operator.stopConsumers()
 
 elif args.command == 'runTest':
-    logging.info("stopping test")
+    log.info("stopping test")
     operator.runTest()
 
 elif args.command == 'regenerateData':
-    logging.info("CreatingData")
+    log.info("CreatingData")
     operator.createData()
 else:
-    logging.error("Error: Unrecognised command")
+    log.error("Error: Unrecognised command")
     sys.exit(1)
